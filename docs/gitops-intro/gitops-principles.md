@@ -23,4 +23,4 @@ Principles 1 and 2 you may already follow with "YAML in Git". **Principles 3 and
 
 ---
 
-[← The GitOps Workflow](gitops-workflow.md) · [↑ Contents](../../README.md) · [Getting Started with Argo CD →](../argocd-getting-started/overview.md)
+[← The GitOps Workflow](gitops-workflow.md) · [↑ Contents](../../README.md) · [Installing Argo CD →](../argocd-getting-started/installing-argocd.md)

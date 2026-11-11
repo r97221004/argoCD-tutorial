@@ -43,7 +43,7 @@ This builds a vanilla, single-node Kubernetes cluster (containerd, kubelet/kubea
 ansible-playbook -i ansible/inventory/azure.ini ansible/playbooks/install_kube_tools.yml
 ```
 
-- **Helm** — required: the next page installs Argo CD from its official Helm chart.
+- **Helm** — required: Argo CD is installed from its official Helm chart in [Installing Argo CD](../argocd-getting-started/installing-argocd.md).
 - **k9s** — optional but recommended: you'll use it to *watch* Argo CD create, heal, and prune resources. Details in **[ansible-tutorial → kube_tools Role](https://github.com/r97221004/ansible-tutorial/blob/master/docs/roles/kube-tools.md)**.
 
 ### Verify your cluster
@@ -61,4 +61,4 @@ If any of these fail, fix the cluster first — see the Ansible tutorial's [Trou
 
 ---
 
-[↑ Contents](../../README.md) · [Install Argo CD →](install-argocd.md)
+[↑ Contents](../../README.md) · [The Push Model and Its Drawbacks →](../gitops-intro/push-model.md)

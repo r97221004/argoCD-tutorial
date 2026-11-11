@@ -27,7 +27,6 @@ Full walk-through in [Environment Setup](docs/environment-setup/setup-cluster.md
 **Part 1 — Environment Setup**
 
 - [**Set Up a Cluster**](docs/environment-setup/setup-cluster.md) — a single-node kubeadm cluster plus k9s and Helm, via Ansible.
-- [**Install Argo CD**](docs/environment-setup/install-argocd.md) — the Argo CD Helm chart and a matching CLI, via Ansible; log in to the UI and CLI.
 
 **Part 2 — Introduction to GitOps**
 
@@ -37,7 +36,8 @@ Full walk-through in [Environment Setup](docs/environment-setup/setup-cluster.md
 
 **Part 3 — [Argo CD] Getting Started with Argo CD**
 
-- [**Getting Started with Argo CD**](docs/argocd-getting-started/overview.md) — _TODO_
+- [**Installing Argo CD**](docs/argocd-getting-started/installing-argocd.md) — the Argo CD Helm chart and a matching CLI via Ansible, and what each component does.
+- [**Accessing Argo CD**](docs/argocd-getting-started/accessing-argocd.md) — reach the UI and CLI with a port-forward, log in, and change the admin password.
 
 **Part 4 — [Argo CD] Core Argo CD Concepts**
 

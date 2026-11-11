@@ -8,4 +8,4 @@ _TODO: 內容待補。_
 
 ---
 
-[← Getting Started with Argo CD](../argocd-getting-started/overview.md) · [↑ Contents](../../README.md)
+[← Accessing Argo CD](../argocd-getting-started/accessing-argocd.md) · [↑ Contents](../../README.md)
