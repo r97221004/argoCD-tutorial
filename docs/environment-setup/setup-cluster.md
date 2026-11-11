@@ -6,7 +6,7 @@
 
 > ⚠️ **Installation lives in the companion Ansible tutorial.** This page only lists which playbooks to run, in which order, and how to confirm the result.
 
-Argo CD is not a tool you run on your laptop: it's a set of controllers that live **in the cluster** and pull manifests from Git. So the environment for this course is the same single-node lab built in [Kubernetes in Practice](https://github.com/r97221004/k8s-tutorial), plus Helm to install Argo CD with.
+Argo CD isn't a tool you run on your laptop: it runs as a set of controllers **inside the cluster**. So this course needs a single-node Kubernetes cluster, plus Helm and k9s, all installed with two playbooks.
 
 ### What you need
 
