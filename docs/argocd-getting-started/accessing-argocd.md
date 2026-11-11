@@ -94,8 +94,8 @@ argocd version               # client and server versions match
 argocd app list              # empty table, no error, so you're logged in
 ```
 
-An empty `argocd app list` is the goal: you can reach Argo CD from both the UI and the CLI, and it's ready for your first Application in [Core Argo CD Concepts](../argocd-core-concepts/overview.md).
+An empty `argocd app list` is the goal: you can reach Argo CD from both the UI and the CLI, and it's ready for your first Application in [Core Argo CD Concepts](../argocd-core-concepts/architecture.md).
 
 ---
 
-[← Installing Argo CD](installing-argocd.md) · [↑ Contents](../../README.md) · [Core Argo CD Concepts →](../argocd-core-concepts/overview.md)
+[← Installing Argo CD](installing-argocd.md) · [↑ Contents](../../README.md) · [The Argo CD Architecture →](../argocd-core-concepts/architecture.md)

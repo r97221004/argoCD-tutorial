@@ -95,7 +95,7 @@ kubectl diff -f manifests/gitops-intro/drift-demo.yaml
 
 The diff shows `replicas: 5 → 2` and `nginx:1.28 → nginx:1.27`: the cluster has **drifted**. (`kubectl diff` exits with code `1` when it finds differences. That's expected, not an error.)
 
-Notice what *doesn't* happen: nothing puts it back. The cluster keeps running 5 Pods of 1.28 until someone notices and runs the pipeline again. In [Core Argo CD Concepts](../argocd-core-concepts/overview.md) you'll do the same experiment with Argo CD watching, and see it mark the app `OutOfSync` and undo the change.
+Notice what *doesn't* happen: nothing puts it back. The cluster keeps running 5 Pods of 1.28 until someone notices and runs the pipeline again. In [Lab: The Sync Process](../argocd-core-concepts/sync-process.md) you'll do the same experiment with Argo CD watching, and see it mark the app `OutOfSync` and undo the change.
 
 Clean up:
 

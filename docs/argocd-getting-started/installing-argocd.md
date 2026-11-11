@@ -59,17 +59,9 @@ Argo CD isn't one program. It's several components, each running as its own Pod:
 kubectl -n argocd get pods
 ```
 
-| Pod | Role |
-|-----|------|
-| **argocd-server** | the API server behind both the **web UI** and the **`argocd` CLI** |
-| **argocd-repo-server** | clones Git repos and renders manifests (plain YAML, Helm, Kustomize) |
-| **argocd-application-controller** | the **reconcile loop**: compares the rendered manifests with the live cluster and syncs them |
-| **argocd-applicationset-controller** | generates many Applications from one template (covered later) |
-| **argocd-redis** | cache for the other components |
-| **argocd-dex-server** | SSO / OIDC login (unused while we log in as `admin`) |
-| **argocd-notifications-controller** | sends Slack/email/webhook notifications on sync events |
+You should see about seven Pods whose names start with `argocd-`: the server, repo-server, application-controller and a few helpers. What each one does, and how they work together, is covered in [The Argo CD Architecture](../argocd-core-concepts/architecture.md).
 
-The heart of GitOps is the **application-controller**. The repo-server only *reads* Git, and argocd-server only *shows* the result. The chart also registers CRDs such as `applications.argoproj.io` and `appprojects.argoproj.io`. These are the objects you'll write in the next chapters:
+The chart also registers Argo CD's own resource types (CRDs). The most important one is `applications.argoproj.io`, which you'll write in the next chapter:
 
 ```bash
 kubectl get crd | grep argoproj.io

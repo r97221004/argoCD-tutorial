@@ -1,0 +1,21 @@
+# The Argo CD Application for docs/argocd-core-concepts/first-application.md.
+# It tells Argo CD: "keep the YAML in this Git folder deployed to this cluster and namespace".
+# The guestbook manifests live in a separate config repo, not in this tutorial.
+# Replace <YOUR_GITHUB_USER> with the account you forked <GITOPS_REPO> into.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook
+  namespace: argocd # Applications always live in Argo CD's own namespace
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<YOUR_GITHUB_USER>/<GITOPS_REPO>.git
+    targetRevision: HEAD # the default branch's latest commit
+    path: guestbook
+  destination:
+    server: https://kubernetes.default.svc # the cluster Argo CD itself runs in
+    namespace: guestbook
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true # create the guestbook namespace if it doesn't exist
