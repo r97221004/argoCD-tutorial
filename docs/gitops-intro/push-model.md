@@ -61,15 +61,19 @@ This is the same **imperative** habit as running `kubectl apply` by hand. It's j
 |---------|-----|
 | 🔑 **CI holds the keys to the cluster** | The pipeline needs a kubeconfig with write access. Anyone who can read it, such as another CI job or a leaked log, can change production. |
 | 👀 **Nobody watches after the deploy** | The job ends when `kubectl apply` succeeds. Whether the Pods actually became healthy, or changed later, nothing checks. |
+| 🕵️ **No record of who changed what** | A `kubectl` change leaves no commit, no review and no reason. Git shows what the pipeline deployed, not what's actually running. |
+| ⏪ **Rollback means re-deploying** | Undoing a bad release means finding the last good build and re-running its pipeline, under pressure, sometimes for several services at once. |
 | 🔀 **The cluster drifts away from Git** | Anyone with `kubectl` can change the cluster directly, and nothing changes it back. |
 
-The third one has a name: **configuration drift**.
+The last one has a name: **configuration drift**.
 
 ### Configuration drift
 
 **Configuration drift** is when the live cluster slowly stops matching the YAML in Git. It comes from small, well-meant changes: a `kubectl scale` during a traffic spike or a `kubectl edit` hotfix at 2 a.m. that never makes it back into the repo.
 
 Each one is harmless alone. Together they mean **Git no longer tells you what's actually running**, and a push model can't notice: the pipeline pushes and exits.
+
+With several environments it gets worse: dev, staging and prod each drift in their own way, so a release that worked in staging may not behave the same in prod.
 
 ### Try it — create drift by hand
 

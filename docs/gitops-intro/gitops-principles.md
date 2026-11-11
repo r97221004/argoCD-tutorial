@@ -9,7 +9,7 @@ Storing manifests in Git and running `kubectl apply` from CI is *not* GitOps. Th
 | # | Principle | In plain words | In Argo CD |
 |---|-----------|----------------|------------|
 | 1 | **Declarative** | Describe *what* you want (`replicas: 3`), not the steps to get there. | Apps are plain YAML, Kustomize or Helm |
-| 2 | **Versioned and Immutable** | The desired state lives in Git, so every change is a commit you can review and revert. | Each Application points at a Git repo and revision |
+| 2 | **Versioned and Immutable** | The desired state lives in Git, so every change is a commit you can review and revert. A commit never changes once made, so you can always go back to an exact earlier version. | Each Application points at a Git repo and revision |
 | 3 | **Pulled Automatically** | An agent fetches the desired state itself. Nobody pushes into the cluster. | Checks the repo every 3 minutes (or on a webhook) |
 | 4 | **Continuously Reconciled** | The agent keeps comparing Git with the cluster and fixes any difference. | Shows `Synced` / `OutOfSync`, and with self-heal reverts drift like the [demo](push-model.md#try-it--create-drift-by-hand) |
 

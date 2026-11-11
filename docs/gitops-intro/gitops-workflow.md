@@ -57,11 +57,13 @@ flowchart LR
     style cluster fill:#1E293B,stroke:#334155,color:#F1F5F9,fillStyle:solid
 ```
 
+> **Why two repos?** The **app repo** holds code and triggers CI. The **config repo** holds the Kubernetes YAML that Argo CD watches. Keeping them apart means a code change alone never deploys anything. Only a change to the config repo does.
+
 ### One change, end to end
 
 1. **Change the code.** A developer merges a PR in the **app repo**.
 2. **CI builds, and stops there.** It tests the code and pushes an image such as `myapp:1.4.2` to the registry. It never touches the cluster.
-3. **Update Git.** The new image tag is committed to the **config repo**.
+3. **Update Git.** CI commits the new image tag to the **config repo**, or opens a PR for someone to review. CI now needs write access to Git, not to the cluster.
 4. **Argo CD notices.** It checks the repo every 3 minutes by default and sees that Git and the cluster differ: the app is **`OutOfSync`**.
 5. **Argo CD syncs.** It applies the change from *inside* the cluster and waits until it's **`Healthy`**.
 6. **Argo CD keeps watching.** If someone changes the cluster with `kubectl` later, Argo CD sees the drift and can change it back.
@@ -73,9 +75,8 @@ flowchart LR
 | Who applies changes | CI, from outside the cluster | Argo CD, from inside |
 | Cluster credentials | stored in CI | never leave the cluster |
 | Drift | goes unnoticed | detected, and can be reverted |
+| Audit trail | pipeline logs, plus whatever `kubectl` did | `git log`: every change has an author and a reason |
 | Rollback | re-run an old pipeline | `git revert` |
-
-> **Why two repos?** The **app repo** holds code and triggers CI. The **config repo** holds the Kubernetes YAML that Argo CD watches. Keeping them apart means a code change alone never deploys anything. Only a change to the config repo does.
 
 > The key idea: **every change to the cluster is a Git commit.** Deploying, rolling back and auditing all become Git operations you already know: PR, merge, revert, log.
 
