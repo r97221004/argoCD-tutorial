@@ -16,13 +16,18 @@ _TODO_
 
 ## Prerequisites
 
-_TODO_ — 建議先完成 [Kubernetes in Practice](https://github.com/r97221004/k8s-tutorial)。
+- **Kubernetes basics** — Pods, Deployments, Services, `kubectl`. New to them? Start with [Kubernetes in Practice](https://github.com/r97221004/k8s-tutorial).
+- **A control machine with Ansible** and a clone of [ansible-tutorial](https://github.com/r97221004/ansible-tutorial) — every install in this guide is an Ansible role.
+- **A target Linux VM** (Ubuntu 22.04, 2 vCPU / 4 GB RAM / 20 GB disk) reachable over SSH with passwordless sudo.
+
+Full walk-through in [Environment Setup](docs/environment-setup/setup-cluster.md).
 
 ## Table of Contents
 
 **Part 1 — Environment Setup**
 
-- [**Environment Setup**](docs/environment-setup/overview.md) — _TODO_
+- [**Set Up a Cluster**](docs/environment-setup/setup-cluster.md) — a single-node kubeadm cluster plus k9s and Helm, via Ansible.
+- [**Install Argo CD**](docs/environment-setup/install-argocd.md) — the Argo CD Helm chart and a matching CLI, via Ansible; log in to the UI and CLI.
 
 **Part 2 — Introduction to GitOps**
 

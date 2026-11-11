@@ -8,4 +8,4 @@ _TODO: 內容待補。_
 
 ---
 
-[← Environment Setup](../environment-setup/overview.md) · [↑ Contents](../../README.md) · [Getting Started with Argo CD →](../argocd-getting-started/overview.md)
+[← Install Argo CD](../environment-setup/install-argocd.md) · [↑ Contents](../../README.md) · [Getting Started with Argo CD →](../argocd-getting-started/overview.md)
