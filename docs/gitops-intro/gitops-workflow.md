@@ -63,10 +63,10 @@ flowchart LR
 
 1. **Change the code.** A developer merges a PR in the **app repo**.
 2. **CI builds, and stops there.** It tests the code and pushes an image such as `myapp:1.4.2` to the registry. It never touches the cluster.
-3. **Update Git.** CI commits the new image tag to the **config repo**, or opens a PR for someone to review. CI now needs write access to Git, not to the cluster.
+3. **Update Git.** CI commits the new image tag to the **config repo**, or opens a PR for someone to review. CI now needs write access to Git, not to the cluster. That's not the only way: you can edit the YAML by hand, run a workflow inside the config repo, or let a tool like Argo CD Image Updater do it. Whatever the method, the change has to land in Git.
 4. **Argo CD notices.** It checks the repo every 3 minutes by default and sees that Git and the cluster differ: the app is **`OutOfSync`**.
 5. **Argo CD syncs.** It applies the change from *inside* the cluster and waits until it's **`Healthy`**.
-6. **Argo CD keeps watching.** If someone changes the cluster with `kubectl` later, Argo CD sees the drift and can change it back.
+6. **Argo CD keeps watching.** If someone changes the cluster with `kubectl` later, Argo CD marks the app `OutOfSync` and, with self-heal turned on, changes it back.
 
 ### Push vs. pull
 
