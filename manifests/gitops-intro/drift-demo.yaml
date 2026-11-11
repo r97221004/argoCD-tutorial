@@ -1,0 +1,23 @@
+# The "desired state" for the configuration-drift demo in docs/gitops-intro/push-model.md.
+# Represents the desired state stored in Git, applied once with `kubectl apply -f` as a push pipeline would.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drift-demo
+  labels:
+    app: drift-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: drift-demo
+  template:
+    metadata:
+      labels:
+        app: drift-demo
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27
+          ports:
+            - containerPort: 80

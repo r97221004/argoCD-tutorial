@@ -174,4 +174,4 @@ This removes the Helm release, the `argocd` namespace, and the CLI. The CRDs are
 
 ---
 
-[← Set Up a Cluster](setup-cluster.md) · [↑ Contents](../../README.md) · [Introduction to GitOps →](../gitops-intro/overview.md)
+[← Set Up a Cluster](setup-cluster.md) · [↑ Contents](../../README.md) · [The Push Model and Its Drawbacks →](../gitops-intro/push-model.md)

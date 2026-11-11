@@ -31,7 +31,9 @@ Full walk-through in [Environment Setup](docs/environment-setup/setup-cluster.md
 
 **Part 2 — Introduction to GitOps**
 
-- [**Introduction to GitOps**](docs/gitops-intro/overview.md) — _TODO_
+- [**The Push Model and Its Drawbacks**](docs/gitops-intro/push-model.md) — why CI-driven `kubectl apply` leads to configuration drift.
+- [**The GitOps Workflow**](docs/gitops-intro/gitops-workflow.md) — pull instead of push: Argo CD reconciles the cluster from Git.
+- [**The GitOps Principles**](docs/gitops-intro/gitops-principles.md) — the four OpenGitOps principles and how Argo CD meets each.
 
 **Part 3 — [Argo CD] Getting Started with Argo CD**
 

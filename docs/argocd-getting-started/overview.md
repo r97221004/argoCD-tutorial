@@ -8,4 +8,4 @@ _TODO: 內容待補。_
 
 ---
 
-[← Introduction to GitOps](../gitops-intro/overview.md) · [↑ Contents](../../README.md) · [Core Argo CD Concepts →](../argocd-core-concepts/overview.md)
+[← The GitOps Principles](../gitops-intro/gitops-principles.md) · [↑ Contents](../../README.md) · [Core Argo CD Concepts →](../argocd-core-concepts/overview.md)
