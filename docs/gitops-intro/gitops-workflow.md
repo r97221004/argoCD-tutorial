@@ -59,33 +59,23 @@ flowchart LR
 
 ### One change, end to end
 
-1. **Change the code.** A developer opens a PR in the **app repo**. It is reviewed and merged.
-2. **CI builds, and stops there.** The pipeline tests the code, builds an image such as `myapp:1.4.2`, and pushes it to the registry. It has **no cluster credentials**.
-3. **Update the desired state in Git.** CI (or a person) commits the new image tag to the **config repo**, usually through a PR so the change is reviewed like code.
-4. **Argo CD notices.** It polls the repo (every 3 minutes by default) or receives a webhook, and compares the new desired state with the live cluster. The app shows as **`OutOfSync`**.
-5. **Argo CD syncs.** It applies the difference from *inside* the cluster, then tracks the resources until they're **`Healthy`**. The status shows in the UI and CLI, not just in a pipeline log.
-6. **Argo CD keeps watching.** If someone runs `kubectl scale` or `kubectl edit` later, Argo CD sees the drift. It can report it, or with self-heal turned on, revert it automatically.
+1. **Change the code.** A developer merges a PR in the **app repo**.
+2. **CI builds, and stops there.** It tests the code and pushes an image such as `myapp:1.4.2` to the registry. It never touches the cluster.
+3. **Update Git.** The new image tag is committed to the **config repo**.
+4. **Argo CD notices.** It checks the repo every 3 minutes by default and sees that Git and the cluster differ: the app is **`OutOfSync`**.
+5. **Argo CD syncs.** It applies the change from *inside* the cluster and waits until it's **`Healthy`**.
+6. **Argo CD keeps watching.** If someone changes the cluster with `kubectl` later, Argo CD sees the drift and can change it back.
 
-### What changes compared to push
+### Push vs. pull
 
 | | Push (CI deploys) | Pull (GitOps) |
 |---|---|---|
-| Who applies changes | CI pipeline, from outside | Argo CD, from inside the cluster |
-| Cluster credentials | stored in CI | stay in the cluster |
-| Network direction | CI → cluster API (inbound) | cluster → Git (outbound) |
-| When it runs | once per pipeline run | continuously |
-| Drift | invisible | detected, optionally reverted |
-| Deploy record | pipeline logs | Git history |
+| Who applies changes | CI, from outside the cluster | Argo CD, from inside |
+| Cluster credentials | stored in CI | never leave the cluster |
+| Drift | goes unnoticed | detected, and can be reverted |
 | Rollback | re-run an old pipeline | `git revert` |
 
-### Two repos: app and config
-
-The diagram uses two repos on purpose:
-
-- **App repo**: source code, Dockerfile, tests. It changes often and triggers CI.
-- **Config repo**: Kubernetes manifests (plain YAML, Kustomize, or Helm values). It changes only when what's deployed should change, and Argo CD watches it.
-
-Keeping them separate means a README typo doesn't trigger a deploy, cluster config can have different reviewers than code, and CI updating an image tag can't loop back and trigger itself. One repo also works for small projects. Argo CD can watch a sub-path. But the two-repo split is the common default.
+> **Why two repos?** The **app repo** holds code and triggers CI. The **config repo** holds the Kubernetes YAML that Argo CD watches. Keeping them apart means a code change alone never deploys anything. Only a change to the config repo does.
 
 > The key idea: **every change to the cluster is a Git commit.** Deploying, rolling back and auditing all become Git operations you already know: PR, merge, revert, log.
 

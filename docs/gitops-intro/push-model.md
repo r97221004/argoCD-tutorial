@@ -57,28 +57,19 @@ This is the same **imperative** habit as running `kubectl apply` by hand. It's j
 
 ### The drawbacks
 
-| Problem | Why it happens in a push model |
-|---------|-------------------------------|
-| 🔑 **Credentials live outside the cluster** | The pipeline needs a kubeconfig with write access, often cluster-admin. Every CI runner, secret store and plugin that can read it can change production. |
-| 🌐 **The cluster must be reachable from CI** | The API server has to be open to the pipeline's network. That's harder with private clusters, and gets worse with every extra cluster you add. |
-| 🎯 **"Deployed" means "the command succeeded"** | `kubectl apply` returning 0 doesn't mean the Pods became healthy. Once the job ends, nobody is watching. |
-| 🧭 **Git is not the source of truth** | Anyone with `kubectl` can change the cluster directly. Git shows what was pushed *once*, not what's running *now*. |
-| 🔁 **Nothing corrects changes** | The pipeline only runs on a new commit. If the cluster is changed in between, the change just stays. |
-| ⏪ **Rollback means re-running the pipeline** | You redeploy an old build or run `kubectl rollout undo`. Both are separate actions, and neither leaves a record in Git. |
+| Problem | Why |
+|---------|-----|
+| 🔑 **CI holds the keys to the cluster** | The pipeline needs a kubeconfig with write access. Anyone who can read it, such as another CI job or a leaked log, can change production. |
+| 👀 **Nobody watches after the deploy** | The job ends when `kubectl apply` succeeds. Whether the Pods actually became healthy, or changed later, nothing checks. |
+| 🔀 **The cluster drifts away from Git** | Anyone with `kubectl` can change the cluster directly, and nothing changes it back. |
 
-The last three rows add up to the most common problem of all: **configuration drift**.
+The third one has a name: **configuration drift**.
 
 ### Configuration drift
 
-**Configuration drift** is when the live state of the cluster slowly moves away from the desired state written in Git. It happens through small, usually well-meant changes:
+**Configuration drift** is when the live cluster slowly stops matching the YAML in Git. It comes from small, well-meant changes: a `kubectl scale` during a traffic spike or a `kubectl edit` hotfix at 2 a.m. that never makes it back into the repo.
 
-- a `kubectl scale` during a traffic spike that nobody scales back,
-- a `kubectl edit` hotfix at 2 a.m. that never makes it into the repo,
-- a `kubectl set image` to test something, then forgotten.
-
-Each change is harmless on its own. But afterwards **nobody knows what is actually running**, and the next pipeline run either silently overwrites the hotfix or leaves fields it doesn't manage untouched. Either way, the YAML in Git is no longer a reliable description of the cluster.
-
-> A push model can't detect drift. The pipeline compares nothing: it pushes and exits.
+Each one is harmless alone. Together they mean **Git no longer tells you what's actually running**, and a push model can't notice: the pipeline pushes and exits.
 
 ### Try it — create drift by hand
 
