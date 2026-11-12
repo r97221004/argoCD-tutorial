@@ -61,8 +61,8 @@ flowchart LR
 
 ### One change, end to end
 
-1. **Change the code.** A developer merges a PR in the **app repo**.
-2. **CI builds, and stops there.** It tests the code and pushes an image such as `myapp:1.4.2` to the registry. It never touches the cluster.
+1. **Open a PR.** A developer pushes a branch and opens a PR in the **app repo**. CI runs lint and unit tests, and the PR is merged once they pass.
+2. **CI builds, and stops there.** On merge to `main`, CI builds the image and pushes it, such as `myapp:1.4.2`, to the registry. It never touches the cluster.
 3. **Update Git.** CI commits the new image tag to the **config repo**, or opens a PR for someone to review. CI now needs write access to Git, not to the cluster.
 4. **Argo CD notices.** It checks the repo every 3 minutes by default and sees that Git and the cluster differ: the app is **`OutOfSync`**.
 5. **Argo CD syncs.** With automated sync it applies the change on its own; otherwise it waits for you to press Sync. Either way it applies from *inside* the cluster and waits until it's **`Healthy`**.
