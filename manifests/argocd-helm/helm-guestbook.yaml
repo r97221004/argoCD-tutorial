@@ -1,0 +1,20 @@
+# The Argo CD Application for the labs in docs/argocd-helm/helm-charts.md and chart-values.md.
+# It points at a Helm chart in a Git repo: Argo CD sees Chart.yaml in the folder and renders it.
+# Replace <YOUR_GITHUB_USER> with the account you forked argocd-apps into.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: helm-guestbook
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/<YOUR_GITHUB_USER>/argocd-apps.git
+    targetRevision: HEAD
+    path: helm-guestbook # a folder with Chart.yaml: rendered with helm template
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: helm-guestbook
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,19 @@
+# The Argo CD Application for the lab in docs/argocd-helm/public-helm-charts.md.
+# It points at a chart in a Helm repository, not Git: repoURL + chart + a pinned chart version.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: headlamp
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://kubernetes-sigs.github.io/headlamp/ # a Helm repository
+    chart: headlamp # the chart's name in that repository (instead of path)
+    targetRevision: 0.45.0 # the chart version, pinned (the lab upgrades it to 0.46.0)
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: headlamp
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

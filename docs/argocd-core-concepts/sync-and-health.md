@@ -196,4 +196,4 @@ The namespace may stay behind because Argo CD created it through `CreateNamespac
 
 ---
 
-[← Applications vs. Kubernetes Manifests](applications-vs-manifests.md) · [↑ Contents](../../README.md)
+[← Applications vs. Kubernetes Manifests](applications-vs-manifests.md) · [↑ Contents](../../README.md) · [Helm Charts in Argo CD →](../argocd-helm/helm-charts.md)
