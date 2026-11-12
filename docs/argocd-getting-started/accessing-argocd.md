@@ -14,13 +14,15 @@ Argo CD's Service isn't exposed outside the cluster, so reach it with a port-for
 kubectl -n argocd port-forward svc/argocd-server 8080:443
 ```
 
+If the UI or CLI suddenly stops responding later, the port-forward probably dropped: restart it.
+
+> 💡 **The VM is remote?** The port-forward listens on the VM's `localhost`. Tunnel it to your laptop with `ssh -L 8080:localhost:8080 <YOUR_USER>@<YOUR_VM_IP>` and open `https://localhost:8080` locally.
+
 **Web UI** — open `https://localhost:8080` and accept the self-signed certificate. Log in as `admin` with the initial password:
 
 ```bash
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
 ```
-
-> 💡 **The VM is remote?** The port-forward listens on the VM's `localhost`. Tunnel it to your laptop with `ssh -L 8080:localhost:8080 <YOUR_USER>@<YOUR_VM_IP>` and open `https://localhost:8080` locally.
 
 **CLI** — in another terminal:
 
