@@ -42,6 +42,7 @@ flowchart LR
     repo -->|clone| git
     ctrl ==>|"watch live state · apply changes"| api
     api --> apps
+    git -. "webhook (optional)" .-> server
 
     classDef ctrl fill:#0F172A,stroke:#2563EB,stroke-width:2px,color:#FFFFFF
     classDef eng fill:#D97706,stroke:#92400E,stroke-width:3px,color:#FFFFFF
@@ -58,11 +59,11 @@ flowchart LR
 
 | Component | Its one job | Think of it as |
 |-----------|-------------|----------------|
-| **argocd-server** | Serves the web UI and the API that the `argocd` CLI talks to. | the front desk |
+| **argocd-server** | Serves the web UI and the API used by the `argocd` CLI and CI jobs, and receives Git webhooks. | the front desk |
 | **argocd-repo-server** | Clones Git repos and turns them into plain Kubernetes YAML (rendering Helm or Kustomize if needed). | the reader |
 | **argocd-application-controller** | Compares that YAML with what's running, reports the difference, and applies changes when it syncs. | the worker |
 
-The **application-controller** is where GitOps actually happens: it runs the reconcile loop from [The GitOps Principles](../gitops-intro/gitops-principles.md). The other two only *show* (server) and *read* (repo-server).
+The **application-controller** is where GitOps actually happens: it runs the reconcile loop from [The GitOps Principles](../gitops-intro/gitops-principles.md). The other two only *serve* requests (server) and *read* Git (repo-server).
 
 ### The helpers
 
@@ -77,11 +78,11 @@ If a helper is down, Argo CD mostly keeps working. If one of the three core comp
 
 | If this is down… | You'll notice |
 |------------------|---------------|
-| argocd-server | the UI and CLI stop responding, **but syncing continues** |
+| argocd-server | the UI, CLI and Git webhooks stop, **but syncing continues**: new commits are still picked up by the 3-minute poll |
 | repo-server | apps show `Unknown` / comparison errors: Argo CD can't read Git |
 | application-controller | nothing syncs and drift isn't detected, even though the UI loads fine |
 
-> When something looks wrong, ask *which job* failed: showing, reading or syncing. That tells you which Pod's logs to read, e.g. `kubectl -n argocd logs deploy/argocd-repo-server`.
+> When something looks wrong, ask *which job* failed: serving, reading or syncing. That tells you which Pod's logs to read, e.g. `kubectl -n argocd logs deploy/argocd-repo-server` (the controller is a StatefulSet: `sts/argocd-application-controller`).
 
 ### Where Argo CD keeps its state
 
