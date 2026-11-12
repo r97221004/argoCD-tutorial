@@ -16,7 +16,7 @@ The argocd role uses the `kubernetes.core.helm` module, which isn't bundled with
 ansible-galaxy collection install -r requirements.yml
 ```
 
-> `kubernetes.core` 6.x needs **Ansible 2.16+** — newer than the rest of the Ansible tutorial needs.
+> `kubernetes.core` 6.x needs **ansible-core 2.16+** — newer than the rest of the Ansible tutorial needs.
 
 ### 2. Run the argocd role
 
@@ -31,7 +31,7 @@ What it does:
 - Downloads the **`argocd` CLI** whose version matches the server that was just installed, so the CLI and the server can't drift apart.
 - Prints the commands to fetch the admin password, but doesn't print the password itself.
 
-> 📍 **Where things end up.** The playbook targets `hosts: control`, so everything runs on whichever machine the inventory lists under `[control]`. The **Argo CD server** always lands *in the cluster*. The inventory only decides where the Helm commands are sent from and where the **`argocd` CLI** binary is installed. This guide uses `azure.ini`, which means the CLI is installed **on the VM**. Run the `kubectl` / `argocd` commands on this page and the next one from an SSH session on the VM.
+> 📍 **Where things end up.** The **Argo CD server** always lands *in the cluster*. The **`argocd` CLI** is installed on the `[control]` host from the inventory, which is the VM in this guide, so run the `kubectl` / `argocd` commands on this page and the next one from an SSH session on the VM.
 
 <details>
 <summary><b>Alternative: install the CLI on your own machine (<code>localhost.ini</code>)</b></summary>
@@ -71,6 +71,7 @@ kubectl get crd | grep argoproj.io
 
 ```bash
 kubectl -n argocd get pods   # every Pod Running / Ready
+helm list -n argocd          # the pinned chart version and the Argo CD version it ships
 argocd version --client      # the CLI is installed (without --client it tries to reach the server, which needs a login first)
 ```
 
@@ -78,11 +79,13 @@ Argo CD is running, but you can't reach it yet: its Service isn't exposed outsid
 
 ### Uninstall
 
+**Delete your Applications first** (`argocd app delete <app>`), while Argo CD is still running so it can clean them up. Otherwise an Application with a finalizer can leave the `argocd` namespace stuck in `Terminating`.
+
 ```bash
-ansible-playbook -i ansible/inventory/azure.ini ansible/playbooks/uninstall_argocd.yml
+ansible-playbook -i ansible/inventory/azure.ini ansible/playbooks/uninstall_argocd.yml   # or localhost.ini, if you installed with it
 ```
 
-This removes the Helm release, the `argocd` namespace, and the CLI. The CRDs are kept on purpose, so your Application definitions aren't wiped by accident. The [argocd Role](https://github.com/r97221004/ansible-tutorial/blob/master/docs/roles/argocd.md) page shows how to remove them too.
+This removes the Helm release, the `argocd` namespace, and the CLI. The CRDs are kept on purpose: deleting a CRD deletes every resource of that kind in the whole cluster. The [argocd Role](https://github.com/r97221004/ansible-tutorial/blob/master/docs/roles/argocd.md) page shows how to remove them too.
 
 ---
 
