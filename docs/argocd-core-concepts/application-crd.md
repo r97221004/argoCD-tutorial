@@ -85,6 +85,8 @@ The list stays empty until you create guestbook in the [lab on the next page](ap
 
 All three produce the same `Application` object. This guide uses YAML, so the Application is versioned like everything else. The UI and CLI are great for exploring.
 
+> **In real projects**, the Application YAML usually lives in the config repo itself, in its own folder next to the manifests (e.g. `argocd-apps/apps/guestbook.yaml`). You `kubectl apply` just one *root* Application that points at `apps/`, and Argo CD creates the rest from Git. This pattern is called **App of Apps**: after that first apply, adding an app means pushing one more YAML file. This guide keeps the Application in the tutorial repo only so it sits next to the text that explains it.
+
 ---
 
 [← The Argo CD Architecture](architecture.md) · [↑ Contents](../../README.md) · [Applications vs. Kubernetes Manifests →](applications-vs-manifests.md)
