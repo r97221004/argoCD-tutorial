@@ -6,6 +6,13 @@
 
 Installing Argo CD added a new resource type to Kubernetes: **`Application`** (a CRD, Custom Resource Definition). You write it in YAML and `kubectl apply` it like a Deployment. The difference is who reads it: not Kubernetes, but the Argo CD application-controller.
 
+You can see the new type for yourself:
+
+```bash
+kubectl get crd applications.argoproj.io   # the CRD Argo CD installed
+kubectl explain application.spec.source    # its fields, documented like any built-in resource
+```
+
 Here's the one you'll deploy in the [lab below](#lab-deploy-your-first-application), [`manifests/argocd-core-concepts/application.yaml`](../../manifests/argocd-core-concepts/application.yaml):
 
 ```yaml
@@ -34,18 +41,20 @@ It answers three questions: **where from**, **where to**, and **how**.
 
 | Field | Meaning |
 |-------|---------|
-| `metadata.namespace: argocd` | Applications always live in **Argo CD's own namespace**, not where your app runs. |
-| `spec.project` | The AppProject this app belongs to. `default` allows everything, which is fine for now. |
+| `metadata.namespace: argocd` | By default, Applications must live in **Argo CD's own namespace**, not where your app runs. |
+| `spec.project` | The AppProject this app belongs to. A project limits which repos an app may use, which clusters and namespaces it may deploy to, and which resource kinds it may create. `default` allows everything, which is fine for now. |
 | **Where from: `spec.source`** | |
 | `repoURL` | The Git repo to read. Here it's a separate config repo, not this tutorial (see [Two repos](../gitops-intro/gitops-workflow.md)). |
 | `targetRevision` | Which branch, tag or commit to follow. `HEAD` means "always the latest commit on the default branch". |
-| `path` | The folder inside the repo that holds the manifests. |
+| `path` | The folder inside the repo that holds the manifests: plain YAML, a Kustomize overlay or a Helm chart. The repo-server detects which and renders it to YAML. (To use a chart from a Helm repository instead of Git, replace `path` with `chart:` and set `targetRevision` to the chart version.) |
 | **Where to: `spec.destination`** | |
 | `server` | Which cluster. `https://kubernetes.default.svc` means "the cluster Argo CD itself runs in". |
 | `namespace` | Which namespace your app's resources go into. |
-| **How: `spec.syncPolicy`** | |
+| **How: `spec.syncPolicy`** *(optional)* | |
 | `syncOptions: CreateNamespace=true` | Create the destination namespace if it doesn't exist. |
-| *(no `automated:` yet)* | Without it, Argo CD only *reports* differences and waits for you to press Sync. You'll turn it on in [the sync lab](sync-and-health.md#lab-the-sync-process). |
+| *(no `automated:` yet)* | Without it, Argo CD only *reports* differences and waits for you to press Sync. `automated`, plus its `prune` and `selfHeal` switches, are covered in [Sync and Health Checks](sync-and-health.md#sync-policy-who-presses-sync). |
+
+> **Deleting an Application.** `argocd app delete` (and the UI) also deletes the resources the Application deployed. A plain `kubectl delete application` does **not**: it removes only the pointer and leaves the app running, unless the Application has the finalizer `resources-finalizer.argocd.argoproj.io` in `metadata.finalizers`.
 
 ### Three ways to create one
 
@@ -65,6 +74,9 @@ argocd app list                      # …or with the CLI
 ### Lab: Deploy Your First Application
 
 > Fork the config repo, point an Application at its `guestbook/` folder, and let Argo CD deploy it.
+
+<details>
+<summary><b>Show the lab steps</b></summary>
 
 **Goal:** deploy **guestbook**, Argo CD's classic example app (a `guestbook-ui` Deployment and Service), without ever running `kubectl apply` on the app itself.
 
@@ -173,6 +185,8 @@ kubectl -n guestbook port-forward svc/guestbook-ui 8081:80
 | Never applied the guestbook YAML | Git is now the only source of the app |
 
 Leave the app running: the [sync lab](sync-and-health.md#lab-the-sync-process) changes it.
+
+</details>
 
 ---
 

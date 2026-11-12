@@ -66,6 +66,9 @@ By default, automated sync **doesn't** self-heal and **doesn't** prune. Both are
 
 > Change the app through Git, break it through `kubectl`, then let Argo CD fix it on its own.
 
+<details>
+<summary><b>Show the lab steps</b></summary>
+
 **Goal:** see a Git change go out with a manual sync, catch drift, then turn on automated sync and self-heal.
 
 **Before you start:** `guestbook` from [Lab: Deploy Your First Application](application-crd.md#lab-deploy-your-first-application) is `Synced` and `Healthy`. You have both clones on the VM: your fork of `<GITOPS_REPO>` and this tutorial.
@@ -183,6 +186,8 @@ kubectl delete ns guestbook --ignore-not-found
 ```
 
 The namespace may stay behind because Argo CD created it through `CreateNamespace=true` and doesn't track it as part of the app. Deleting it by hand is safe.
+
+</details>
 
 ---
 

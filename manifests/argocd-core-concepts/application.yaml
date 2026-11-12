@@ -6,7 +6,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: guestbook
-  namespace: argocd # Applications always live in Argo CD's own namespace
+  namespace: argocd # by default, Applications must live in Argo CD's own namespace
 spec:
   project: default
   source:
