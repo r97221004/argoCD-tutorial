@@ -64,13 +64,14 @@ flowchart LR
 1. **Open a PR.** A developer pushes a branch and opens a PR in the **app repo**. CI runs lint and unit tests, and the PR is merged once they pass.
 2. **CI builds, and stops there.** On merge to `main`, CI builds the image and pushes it, tagged with the commit SHA such as `myapp:3f2c1a7`, to the registry. It never touches the cluster.
 3. **Update Git.** CI updates the image in the **config repo**'s YAML to `myapp:3f2c1a7` and commits it, or opens a PR for someone to review. CI now needs write access to Git, not to the cluster.
+
+   > **Pushing an image isn't deploying it.** The registry can hold many versions; only the one the config repo points at runs. Many teams update the dev config on every merge, but production only for a release tag such as `v1.4.2` that someone creates in the app repo, usually through a reviewed PR to the config repo.
+
 4. **Argo CD notices.** It checks the repo every 3 minutes by default and sees that Git and the cluster differ: the app is **`OutOfSync`**.
 5. **Argo CD syncs.** With automated sync it applies the change on its own; otherwise it waits for you to press Sync. Either way it applies from *inside* the cluster and waits until it's **`Healthy`**.
 6. **Argo CD keeps watching.** If someone changes the cluster with `kubectl` later, Argo CD marks the app `OutOfSync` and, with self-heal turned on, changes it back.
 
 > **Other ways to update the config repo.** You can also edit the YAML by hand, run a workflow inside the config repo, or let a tool like Argo CD Image Updater do it. Whatever the method, the change has to land in Git.
-
-> **Pushing an image isn't deploying it.** The registry can hold many versions; only the one the config repo points at runs. Many teams update the dev config on every merge, but production only when someone creates a release tag such as `v1.4.2` in Git, often through a PR.
 
 ### Push vs. pull
 
