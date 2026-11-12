@@ -44,4 +44,4 @@ Full walk-through in [Environment Setup](docs/environment-setup/setup-cluster.md
 - [**The Argo CD Architecture**](docs/argocd-core-concepts/architecture.md) — the three core components and what breaks when each is down.
 - [**The Application CRD**](docs/argocd-core-concepts/application-crd.md) — where from, where to, and how: the resource that tells Argo CD what to deploy.
 - [**Applications vs. Kubernetes Manifests**](docs/argocd-core-concepts/applications-vs-manifests.md) — the pointer vs. what it points at. *Lab:* fork, apply an Application, and sync.
-- [**Sync and Health Checks**](docs/argocd-core-concepts/sync-and-health.md) — two independent statuses, refresh vs. sync, and sync policies. *Lab:* Git changes, drift, and self-heal in action.
+- [**Sync and Health Checks**](docs/argocd-core-concepts/sync-and-health.md) — two independent statuses, refresh vs. sync, and sync policies. *Lab:* a Git change and drift, both synced by hand.
