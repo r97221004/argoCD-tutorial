@@ -63,6 +63,7 @@ In short: **the Application says *where*, the manifests say *what*.**
 - **You never `kubectl apply` the manifests yourself.** Argo CD does that. If you do it by hand, it's the drift you saw in [the push model](../gitops-intro/push-model.md).
 - **The manifests are ordinary Kubernetes YAML.** In this guide they're plain files that would work with `kubectl apply -f`. If a repo uses Helm or Kustomize instead, the repo-server renders it to the same plain YAML first. Either way, Argo CD adds no special syntax.
 - **One set of manifests can have many pointers.** Because the two layers are separate, you can create `guestbook-staging` and `guestbook-prod` Applications that share the same base manifests, each pointing at its own Kustomize overlay (say, more replicas in prod), and deploy them to different namespaces or clusters. When the list of environments grows, an **ApplicationSet** generates those Applications from one template.
+- **Argo CD tags what it deploys.** Every resource it applies from Git gets an annotation naming its Application, for example `argocd.argoproj.io/tracking-id: guestbook:/Service:guestbook/guestbook-ui`, which reads as `<app>:<group>/<kind>:<namespace>/<name>` (a Service is in the core API group, so the group is empty). Argo CD has no database, so this tag is how it finds an app's resources to compare, prune or delete, without touching anything it didn't create. *(Argo CD 2.x tracks with the label `app.kubernetes.io/instance` instead.)*
 - **Deleting the pointer doesn't always delete the app.** `argocd app delete` (or Delete in the UI) removes both layers; that's how you'll clean up after the [sync lab](sync-and-health.md#lab-the-sync-process). A plain `kubectl delete application` removes only the pointer and leaves the app running (unless the Application has the `resources-finalizer.argocd.argoproj.io` finalizer).
 
 ### Lab: Deploy Your First Application
@@ -164,6 +165,13 @@ kubectl get deploy,svc,pods -n guestbook    # what it deployed
 ```
 
 The namespace, the `guestbook-ui` Deployment and Service, and its Pod all exist. You never applied them: Argo CD did, from your fork. In the UI, the app's tree view shows the same thing: **Application → Deployment → ReplicaSet → Pod**, plus the Service.
+
+The resources Argo CD applied itself (the Deployment and the Service) carry its tracking tag. The ReplicaSet and Pods don't: Kubernetes created those from the Deployment, not Argo CD.
+
+```bash
+kubectl get svc guestbook-ui -n guestbook -o yaml | grep tracking-id
+# argocd.argoproj.io/tracking-id: guestbook:/Service:guestbook/guestbook-ui
+```
 
 Want to see the guestbook page itself? Port-forward the Service and open `http://localhost:8081` (tunnel it with `ssh -L` if the VM is remote, as in [Accessing Argo CD](../argocd-getting-started/accessing-argocd.md)):
 
