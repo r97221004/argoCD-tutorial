@@ -1,7 +1,7 @@
-# The Argo CD Application for docs/argocd-core-concepts/application-crd.md (the lab section).
+# The Argo CD Application for the lab in docs/argocd-core-concepts/applications-vs-manifests.md.
 # It tells Argo CD: "keep the YAML in this Git folder deployed to this cluster and namespace".
 # The guestbook manifests live in a separate config repo, not in this tutorial.
-# Replace <YOUR_GITHUB_USER> with the account you forked <GITOPS_REPO> into.
+# Replace <YOUR_GITHUB_USER> with the account you forked argocd-apps into.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -10,7 +10,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/<YOUR_GITHUB_USER>/<GITOPS_REPO>.git
+    repoURL: https://github.com/<YOUR_GITHUB_USER>/argocd-apps.git
     targetRevision: HEAD # the default branch's latest commit
     path: guestbook
   destination:

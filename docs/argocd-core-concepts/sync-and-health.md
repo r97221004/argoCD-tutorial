@@ -4,7 +4,7 @@
 
 ---
 
-In the [first lab](application-crd.md#lab-deploy-your-first-application) you saw two lines: `Sync Status` and `Health Status`. They answer different questions, and they change independently.
+In the [first lab](applications-vs-manifests.md#lab-deploy-your-first-application) you saw two lines: `Sync Status` and `Health Status`. They answer different questions, and they change independently.
 
 ### Sync status: does the cluster match Git?
 
@@ -71,7 +71,7 @@ By default, automated sync **doesn't** self-heal and **doesn't** prune. Both are
 
 **Goal:** see a Git change go out with a manual sync, catch drift, then turn on automated sync and self-heal.
 
-**Before you start:** `guestbook` from [Lab: Deploy Your First Application](application-crd.md#lab-deploy-your-first-application) is `Synced` and `Healthy`. You have both clones on the VM: your fork of `<GITOPS_REPO>` and this tutorial.
+**Before you start:** `guestbook` from [Lab: Deploy Your First Application](applications-vs-manifests.md#lab-deploy-your-first-application) is `Synced` and `Healthy`. You have both clones on the VM: your fork of `argocd-apps` and this tutorial.
 
 > 💡 Keep k9s open in a second terminal (`k9s -n guestbook`, then `:pods`) to watch Pods appear and disappear as you go.
 
@@ -87,7 +87,7 @@ spec:
 Commit and push:
 
 ```bash
-cd <GITOPS_REPO>
+cd argocd-apps
 git commit -am "scale guestbook-ui to 2 replicas"
 git push
 ```
@@ -159,7 +159,7 @@ Within a few seconds Argo CD scales it back to 2, with no command from you. This
 Git changes are now deployed automatically too. In your fork, set `replicas: 1` again, then commit, push and refresh. The cluster follows on its own:
 
 ```bash
-cd ../<GITOPS_REPO>
+cd ../argocd-apps
 git commit -am "scale guestbook-ui back to 1 replica"
 git push
 argocd app get guestbook --refresh
