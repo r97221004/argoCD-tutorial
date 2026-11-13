@@ -25,6 +25,17 @@ Everything else in the Application (destination, sync policy) is the same. The c
 
 > **Chart version ≠ app version.** `targetRevision` is the version of the **chart** (its packaging). The software inside has its own `appVersion`. They often differ; for Headlamp they happen to match.
 
+**Charts in an OCI registry.** More and more charts are published to a container registry instead of an `index.yaml` repo (Bitnami's are OCI only). The Application looks the same: `repoURL` is the registry and path **without** the `oci://` prefix you'd give the `helm` CLI:
+
+```yaml
+  source:
+    repoURL: registry-1.docker.io/bitnamicharts   # helm CLI: oci://registry-1.docker.io/bitnamicharts
+    chart: nginx
+    targetRevision: 15.9.0
+```
+
+**Private repositories.** A public repo or registry works with no setup. One that needs credentials has to be registered with Argo CD first, for example `argocd repo add https://charts.example.com --type helm --name example --username … --password …`. See [Declarative Setup: Helm](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#helm) for the options, including private OCI registries.
+
 ### The "latest" trap: pin the chart version
 
 For a Helm repository, `targetRevision` also accepts ranges such as `*` (any version) or `0.*`. Argo CD then picks the newest matching version **every time it refreshes**. That sounds convenient, but:
@@ -49,7 +60,8 @@ For a Helm repository, `targetRevision` also accepts ranges such as `*` (any ver
 #### 1. Look at the chart before deploying it
 
 ```bash
-helm show chart headlamp --repo https://kubernetes-sigs.github.io/headlamp/ --version 0.45.0
+helm show chart headlamp --repo https://kubernetes-sigs.github.io/headlamp/ --version 0.45.0 \
+  | grep -E '^(name|version|appVersion)'
 # appVersion: 0.45.0   ← the Headlamp release inside it
 # name: headlamp
 # version: 0.45.0      ← the chart version: what targetRevision pins
