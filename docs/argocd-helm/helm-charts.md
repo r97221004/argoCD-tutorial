@@ -85,6 +85,34 @@ For a Git source you don't tell Argo CD it's Helm. The repo-server sees `Chart.y
     path: helm-guestbook # contains Chart.yaml, so Argo CD renders it with Helm
 ```
 
+### What if you just change `path` on the existing app?
+
+Editing the `guestbook` Application from [Part 4](../argocd-core-concepts/applications-vs-manifests.md#lab-deploy-your-first-application) and changing only `path: guestbook` to `path: helm-guestbook` works, but not the way most people expect:
+
+| Step | What happens |
+|------|--------------|
+| Render | The repo-server finds `Chart.yaml` and switches to Helm. Nothing else in the Application changes. |
+| Release name | It's the **Application name**, `guestbook`, not `helm-guestbook`. The chart names its resources `<release>-<chart>` unless the release name already contains the chart name, so you get `guestbook-helm-guestbook`. |
+| Old resources | `guestbook-ui` Deployment and Service are no longer in the desired state, but still carry the app's [tracking annotation](../argocd-core-concepts/applications-vs-manifests.md#consequences-worth-knowing). Argo CD marks them **OutOfSync, requires pruning**. |
+| Sync | A plain sync creates `guestbook-helm-guestbook` and leaves `guestbook-ui` running. Two guestbooks share the namespace, and the app stays OutOfSync until you sync with `--prune`. |
+
+```bash
+cd ~/argocd-apps   # wherever you cloned your fork
+helm template guestbook ./helm-guestbook | grep -E '^kind|^  name'
+# kind: Service
+#   name: guestbook-helm-guestbook
+# kind: Deployment
+#   name: guestbook-helm-guestbook
+```
+
+Three things to take away:
+
+- **An Application is identified by its name, not its source.** Changing `path` doesn't make a new app; it replaces what the same app wants deployed.
+- **The Application name decides the Helm release name, and so the resource names.** Pin them with `spec.source.helm.releaseName` or the chart's `fullnameOverride` value if they matter.
+- **Resources that drop out of the desired state aren't deleted until you prune.** Same rule as [`automated.prune`](../argocd-core-concepts/sync-and-health.md#sync-policy-who-presses-sync): Argo CD never deletes anything unless you ask.
+
+That's why the lab below creates a **new** Application, `helm-guestbook`, instead of repointing `guestbook`.
+
 ### Lab: Deploy a Helm Chart from Git
 
 > Render the `helm-guestbook` chart yourself, then let Argo CD deploy it, and see that Helm itself knows nothing about it.
@@ -166,11 +194,20 @@ Open `http://localhost:8083` (tunnel it with `ssh -L 8083:localhost:8083 …` if
 #### 4. Look for the Helm release
 
 ```bash
-helm list -A | grep helm-guestbook   # nothing
-argocd app manifests helm-guestbook  # the rendered YAML Argo CD applied
+helm list -A
+# NAME     NAMESPACE  REVISION  STATUS    CHART
+# argocd   argocd     1         deployed  argo-cd-<version>
 ```
 
-`helm list` is empty because no `helm install` ever ran. To change this app you change Git, not Helm.
+There **is** a release, `argocd`: Argo CD itself was [installed with `helm install`](../argocd-getting-started/installing-argocd.md). There's no `helm-guestbook` release next to it, because nothing ever ran `helm install` for it. (Your cluster may list a few other releases too; what matters is the one that's missing.)
+
+```bash
+helm history helm-guestbook -n helm-guestbook  # Error: release: not found
+argocd app history helm-guestbook              # one entry per sync: ID, date, Git revision
+argocd app manifests helm-guestbook            # the rendered YAML Argo CD applied
+```
+
+Argo CD keeps the deployment history Helm would have kept, recording which Git revision each sync applied. To change this app you change Git, not Helm.
 
 #### Checkpoint
 
@@ -178,7 +215,8 @@ argocd app manifests helm-guestbook  # the rendered YAML Argo CD applied
 |---------|-------------|
 | Pointed `path` at a folder with `Chart.yaml` | Argo CD rendered it with Helm, no extra settings needed |
 | `helm template` locally | you saw exactly what Argo CD deploys |
-| `helm list` came back empty | Argo CD deploys rendered YAML; there's no Helm release to upgrade or roll back |
+| `helm list` showed `argocd` but no `helm-guestbook` | Argo CD deploys rendered YAML; there's no Helm release to upgrade or roll back |
+| `argocd app history` listed the sync | the history lives in Argo CD and Git, not in Helm |
 
 Leave `helm-guestbook` running: [Overriding Chart Values](chart-values.md) changes its values.
 
