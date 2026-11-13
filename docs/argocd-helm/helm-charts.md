@@ -25,7 +25,7 @@ config:
     .edgeLabel, .edgeLabel p, .edgeLabel span { color: #FFFFFF !important; }
 ---
 flowchart LR
-    chart["📦 Helm chart<br/>templates + values"]
+    chart["📦 Helm chart<br/>templates + values<br/><i>in a Git repo or a Helm repo</i>"]
 
     subgraph helm["helm install"]
         direction TB
@@ -36,8 +36,8 @@ flowchart LR
 
     subgraph argo["Argo CD"]
         direction TB
-        a1["📥 repo-server<br/>helm template → plain YAML"]
-        a2["🔁 application-controller<br/>compare · sync"]
+        a1["📥 repo-server<br/>fetches the chart<br/>helm template --values … → plain YAML"]
+        a2["🔁 application-controller<br/>plain YAML = desired state<br/>compare · sync"]
         a1 --> a2
     end
 
@@ -55,13 +55,15 @@ flowchart LR
     style argo fill:#1E293B,stroke:#334155,color:#F1F5F9,fillStyle:solid
 ```
 
-Because Argo CD only *renders* the chart, there is no Helm release:
+Because Argo CD only *renders* the chart, there is no Helm release, and so no Helm history:
 
 | With `helm install` | With Argo CD |
 |---------------------|--------------|
 | `helm list` shows the release | `helm list` shows **nothing**. Look in Argo CD instead. |
+| `helm history` lists its revisions | `helm history` finds no release. The history is **Git's log**, plus `argocd app history` for what was synced when. |
 | `helm upgrade` changes it | **Commit** a change to Git, then sync |
 | `helm rollback` undoes it | **Revert** the commit in Git, then sync |
+| `helm uninstall` removes it | `argocd app delete` removes the Application and what it deployed |
 | Release name chosen on the command line | Release name = the **Application name** (override with `spec.source.helm.releaseName`) |
 | Helm hooks run | Most Helm hooks are translated into Argo CD sync hooks |
 
