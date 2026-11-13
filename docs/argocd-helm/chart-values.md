@@ -15,7 +15,7 @@ With plain `helm` you'd pass `-f values-production.yaml` or `--set replicaCount=
 | `values` | inline, as one YAML **string** | `-f` | ✅ older form of `valuesObject`; prefer `valuesObject` |
 | `parameters` | inline, as `name` / `value` pairs | `--set` | ⚠️ fine in YAML, but `argocd app set --helm-set` writes them **only in the cluster** |
 
-`valueFiles` paths are relative to the chart folder (`path`). Together they look like this:
+`valueFiles` paths are relative to the chart folder (`path`), e.g. `valueFiles: [values-production.yaml]` for `helm-guestbook/values-production.yaml`. The inline forms look like this:
 
 ```yaml
   source:
@@ -23,10 +23,11 @@ With plain `helm` you'd pass `-f values-production.yaml` or `--set replicaCount=
     targetRevision: HEAD
     path: helm-guestbook
     helm:
-      valueFiles:
-        - values-production.yaml # helm-guestbook/values-production.yaml
       valuesObject:
-        replicaCount: 2
+        replicaCount: 3
+      parameters:
+        - name: replicaCount
+          value: "2"
 ```
 
 ### Which value wins?
@@ -40,7 +41,7 @@ When the same key is set in several places, the more specific one wins:
 | 3 | `values` / `valuesObject` (`valuesObject` wins if both are set) |
 | 4 (highest) | `parameters` |
 
-So in the example above, `replicaCount` ends up **2**: `valuesObject` overrides the 3 from `values-production.yaml`, which overrides the 1 in `values.yaml`. The lab walks through exactly that.
+So in the example above, `replicaCount` ends up **2**: `parameters` overrides the 3 from `valuesObject`, which overrides the 1 in `values.yaml`. A values file listed in `valueFiles` would slot in between `values.yaml` and `valuesObject`. The lab walks through exactly that example.
 
 > **Values for a public chart.** A `valueFiles` path must be inside the chart's own source, and you can't add files to someone else's Helm repository. To keep a public chart's values in *your* Git repo, give the Application two `sources`: the chart, and your repo marked `ref: values`, then point at the file as `$values/…`:
 >
@@ -61,7 +62,7 @@ So in the example above, `replicaCount` ends up **2**: `valuesObject` overrides 
 
 ### Lab: Set Chart Values
 
-> Switch `helm-guestbook` to its production values file, then override one value inline, and watch the precedence rules decide.
+> Override `helm-guestbook`'s replica count inline, then override it again with a parameter, and watch the precedence rules decide.
 
 <details>
 <summary><b>Show the lab steps</b></summary>
@@ -74,15 +75,15 @@ So in the example above, `replicaCount` ends up **2**: `valuesObject` overrides 
 cd ~/argoCD-tutorial   # wherever you cloned the tutorial
 ```
 
-#### 1. Use a values file
+#### 1. Override a value inline
 
 Add a `helm` block under `source`, after `path`:
 
 ```yaml
     path: helm-guestbook
     helm:
-      valueFiles:
-        - values-production.yaml
+      valuesObject:
+        replicaCount: 3
 ```
 
 Apply it and compare before syncing:
@@ -94,18 +95,19 @@ argocd app sync helm-guestbook
 kubectl get deploy helm-guestbook -n helm-guestbook   # READY 3/3
 ```
 
-The 3 comes from `values-production.yaml` in your fork, layered over the chart's `values.yaml`.
+The 3 from `valuesObject` is layered over the chart's `values.yaml`. Every key you didn't set, like the image or the Service type, keeps its default.
 
-#### 2. Override it inline
+#### 2. Override it again with a parameter
 
-Add a `valuesObject` next to `valueFiles`:
+Add `parameters` next to `valuesObject`. Parameter values are always strings, so quote the number:
 
 ```yaml
     helm:
-      valueFiles:
-        - values-production.yaml
       valuesObject:
-        replicaCount: 2
+        replicaCount: 3
+      parameters:
+        - name: replicaCount
+          value: "2"
 ```
 
 ```bash
@@ -115,7 +117,7 @@ argocd app sync helm-guestbook
 kubectl get deploy helm-guestbook -n helm-guestbook   # READY 2/2
 ```
 
-The values file still says 3, but `valuesObject` ranks higher, so 2 wins.
+`valuesObject` still says 3, but `parameters` ranks higher, so 2 wins. Here the parameter is in the Application file, so it's still declarative. Set the same thing with `argocd app set --helm-set` and it would exist only in the cluster.
 
 #### 3. See the values Argo CD used
 
@@ -123,14 +125,14 @@ The values file still says 3, but `valuesObject` ranks higher, so 2 wins.
 argocd app manifests helm-guestbook | grep replicas   # replicas: 2
 ```
 
-In the UI, open **helm-guestbook** → **App Details** → **Parameters**: it lists the values files and every value the chart was rendered with. When a result surprises you, this is where to look first.
+In the UI, open **helm-guestbook** → **App Details** → **Parameters**: it lists every value the chart was rendered with. When a result surprises you, this is where to look first.
 
 #### Checkpoint
 
 | You did | Which means |
 |---------|-------------|
-| `valueFiles: [values-production.yaml]` | per-environment values live in Git, next to the chart |
-| `valuesObject: {replicaCount: 2}` | inline values beat value files |
+| `valuesObject: {replicaCount: 3}` | inline values override the chart's `values.yaml`; keys you don't set keep their defaults |
+| `parameters: replicaCount=2` | parameters beat every other way of setting values |
 | `argocd app diff` before each sync | every value change was reviewed before it reached the cluster |
 
 #### Clean up

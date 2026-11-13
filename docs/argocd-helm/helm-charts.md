@@ -103,16 +103,23 @@ The chart was added to `argocd-apps` after you may have forked it. On GitHub, op
 ```bash
 cd ~/argocd-apps   # wherever you cloned your fork
 git pull
-ls helm-guestbook/
-# Chart.yaml  templates  values-production.yaml  values.yaml
+ls -A helm-guestbook/ helm-guestbook/templates/
+# helm-guestbook/:
+# .helmignore  Chart.yaml  templates  values-production.yaml  values.yaml
+#
+# helm-guestbook/templates/:
+# NOTES.txt  _helpers.tpl  deployment.yaml  service.yaml
 ```
 
 | File | What it is |
 |------|------------|
-| `Chart.yaml` | the chart's name and version. Its presence is what tells Argo CD "this is Helm". |
-| `templates/` | a Deployment and a Service, with `{{ .Values... }}` placeholders |
-| `values.yaml` | the defaults: 1 replica, the guestbook image, a ClusterIP Service |
-| `values-production.yaml` | overrides for production, used in [Overriding Chart Values](chart-values.md) |
+| `Chart.yaml` | the chart's name (`helm-guestbook`) and version (`0.1.0`). Its presence is what tells Argo CD "this is Helm". |
+| `.helmignore` | files to leave out when the chart is packaged, like `.gitignore` |
+| `templates/deployment.yaml`, `templates/service.yaml` | a Deployment and a Service, with `{{ .Values... }}` placeholders |
+| `templates/_helpers.tpl` | named templates (`helm-guestbook.fullname`, `.name`, `.chart`) the two manifests use for names and labels. Files starting with `_` render to nothing on their own. |
+| `templates/NOTES.txt` | the "how to reach your app" text `helm install` prints afterwards |
+| `values.yaml` | the defaults: 1 replica, the `gb-frontend:v5` image, a `ClusterIP` Service on port 80, Ingress off |
+| `values-production.yaml` | overrides for production: the Service becomes a `LoadBalancer`. The labs don't use it, since a kubeadm cluster has no load balancer to give it an IP. |
 
 #### 2. Render it yourself
 
@@ -122,7 +129,13 @@ Run what the repo-server will run, using the Application name as the release nam
 helm template helm-guestbook ./helm-guestbook
 ```
 
-The output is a plain Service and Deployment named `helm-guestbook` with `replicas: 1`. This YAML is what Argo CD compares and applies. Nothing about it is Helm-specific any more.
+The output is a plain Service (`type: ClusterIP`) and Deployment (`replicas: 1`), both named `helm-guestbook`. This YAML is what Argo CD compares and applies. Nothing about it is Helm-specific any more. A few details are worth noticing:
+
+| In the output | Why |
+|---------------|-----|
+| Resources are named `helm-guestbook`, not `helm-guestbook-helm-guestbook` | `helm-guestbook.fullname` in `_helpers.tpl` uses just the release name when it already contains the chart name. Name the Application `guestbook-prod` and you'd get `guestbook-prod-helm-guestbook`: the Application name feeds straight into resource names. |
+| Labels `release: helm-guestbook` and `heritage: Helm` | Just template text: `.Release.Name` and `.Release.Service`. `heritage: Helm` doesn't mean a Helm release exists, as step 4 shows. |
+| No `NOTES.txt` text | `helm template` doesn't print NOTES, so Argo CD never shows them either. |
 
 #### 3. Create the Application
 
@@ -141,6 +154,14 @@ kubectl get deploy,svc -n helm-guestbook    # helm-guestbook Deployment and Serv
 ```
 
 In the UI, the app's **App Details** shows the source type as **Helm**, and the **Parameters** tab lists the values the chart was rendered with.
+
+The Service is `ClusterIP`, so reach it the way the chart's `NOTES.txt` suggests, with a port-forward:
+
+```bash
+kubectl -n helm-guestbook port-forward svc/helm-guestbook 8083:80
+```
+
+Open `http://localhost:8083` (tunnel it with `ssh -L 8083:localhost:8083 …` if the VM is remote, as in [Accessing Argo CD](../argocd-getting-started/accessing-argocd.md)). It's the same guestbook page as before, deployed from a chart this time. Press `Ctrl+C` to stop.
 
 #### 4. Look for the Helm release
 
