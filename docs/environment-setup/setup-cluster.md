@@ -50,10 +50,12 @@ SSH into the VM and confirm:
 
 ```bash
 kubectl get nodes                 # one node, STATUS Ready
-kubectl get pods -n kube-system   # control plane, CoreDNS, kube-proxy, flannel all Running
+kubectl get pods -n kube-system   # all Running (see below)
 helm version                      # Helm is installed
 k9s version                       # k9s is installed
 ```
+
+What `kube-system` shows depends on the cluster: with kubeadm, the control plane Pods, CoreDNS and kube-proxy (flannel runs in its own `kube-flannel` namespace); with k3s, CoreDNS, Traefik, local-path-provisioner and metrics-server, since k3s runs its control plane and flannel inside the k3s process itself.
 
 If any of these fail, fix the cluster first — see the Ansible tutorial's [Troubleshooting](https://github.com/r97221004/ansible-tutorial/blob/master/docs/operating/troubleshooting.md). Argo CD can't be healthier than the cluster it runs on.
 
