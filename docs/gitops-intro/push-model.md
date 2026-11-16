@@ -22,38 +22,47 @@ config:
 ---
 flowchart LR
     dev(["👩‍💻 developer"])
-    git["📚 Git repo<br/>app code + YAML"]
+    git["📚 app repo<br/>code + YAML / chart"]
 
     subgraph ci["⚙️ CI/CD pipeline · outside the cluster"]
         direction TB
-        build["🔨 build &amp; test"]
-        push["📤 kubectl apply / helm upgrade<br/>🔑 holds cluster credentials"]
-        build --> push
+        build["🔨 build job<br/>test · build · push image"]
+        deploy["📤 deploy job<br/>auto or manual approval<br/>helm upgrade --install<br/>🔑 holds cluster credentials"]
+        build --> deploy
     end
 
+    reg[("🗃️ image registry")]
+
     subgraph cluster["☸️ Kubernetes cluster"]
+        direction TB
         api["🚪 kube-apiserver"]
+        live["🚀 Deployment · Pods"]
+        api --> live
     end
 
     ops(["🧑‍🔧 someone with kubectl"])
 
     dev -->|git push| git
     git -->|triggers| build
-    push ==>|"PUSH · once per run"| api
+    build -->|push image| reg
+    deploy ==>|"PUSH · once per run"| api
     ops -. "kubectl edit / scale<br/>(not in Git)" .-> api
+    live -. pulls image .-> reg
 
     classDef ctrl fill:#0F172A,stroke:#2563EB,stroke-width:2px,color:#FFFFFF
     classDef eng fill:#D97706,stroke:#92400E,stroke-width:3px,color:#FFFFFF
     classDef tgt fill:#0F172A,stroke:#16A34A,stroke-width:2px,color:#FFFFFF
     class dev,ops,git ctrl
-    class push eng
-    class build,api tgt
-    linkStyle 3 stroke:#D97706,stroke-width:3px
+    class deploy eng
+    class build,reg,api,live tgt
+    linkStyle 5 stroke:#D97706,stroke-width:3px
     style ci fill:#000000,stroke:#94A3B8,color:#FFFFFF,fillStyle:solid
     style cluster fill:#1E293B,stroke:#334155,color:#F1F5F9,fillStyle:solid
 ```
 
 This is the same **imperative** habit as running `kubectl apply` by hand. It's just automated: something outside the cluster issues a command, and the job is considered done once the command succeeds.
+
+> **Packaging the chart too.** Some pipelines go one step further: the build job also packages the Helm chart (`helm package` → a `.tgz`) and pushes it to an OCI registry next to the image, and the deploy job installs that exact version (`helm upgrade --install myapp oci://<registry>/charts/myapp --version 1.4.2`). The chart is now versioned like the image, but the model doesn't change: the pipeline still pushes into the cluster with its own credentials.
 
 ### The drawbacks
 
