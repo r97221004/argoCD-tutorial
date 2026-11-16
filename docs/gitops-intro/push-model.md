@@ -60,7 +60,7 @@ flowchart LR
     style cluster fill:#1E293B,stroke:#334155,color:#F1F5F9,fillStyle:solid
 ```
 
-This is the same **imperative** habit as running `kubectl apply` by hand. It's just automated: something outside the cluster issues a command, and the job is considered done once the command succeeds.
+This is the same **one-shot** habit as running `kubectl apply` by hand. It's just automated: something outside the cluster sends the change once, and the job is considered done when the command returns.
 
 > **Packaging the chart too.** Some pipelines go one step further: the build job also packages the Helm chart (`helm package` → a `.tgz`) and pushes it to an OCI registry next to the image, and the deploy job installs that exact version (`helm upgrade --install myapp oci://<registry>/charts/myapp --version 1.4.2`). The chart is now versioned like the image, but the model doesn't change: the pipeline still pushes into the cluster with its own credentials.
 
@@ -69,9 +69,9 @@ This is the same **imperative** habit as running `kubectl apply` by hand. It's j
 | Problem | Why |
 |---------|-----|
 | 🔑 **CI holds the keys to the cluster** | The pipeline needs a kubeconfig with write access. Anyone who can read it, such as another CI job or a leaked log, can change production. |
-| 👀 **Nobody watches after the deploy** | The job ends when `kubectl apply` succeeds. Whether the Pods actually became healthy, or changed later, nothing checks. |
+| 👀 **Nobody watches after the deploy** | The job ends when the deploy command returns. Even `helm upgrade --wait` only checks once, at deploy time; whether the Pods stay healthy, or get changed later, nothing checks. |
 | 🕵️ **No record of who changed what** | A `kubectl` change leaves no commit, no review and no reason. Git shows what the pipeline deployed, not what's actually running. |
-| ⏪ **Rollback means re-deploying** | Undoing a bad release means finding the last good build and re-running its pipeline, under pressure, sometimes for several services at once. |
+| ⏪ **Rollback means re-deploying** | Undoing a bad release means re-running an old pipeline under pressure, or a quick `helm rollback` that Git never hears about, which is drift again. |
 | 🔀 **The cluster drifts away from Git** | Anyone with `kubectl` can change the cluster directly, and nothing changes it back. |
 
 The last one has a name: **configuration drift**.
